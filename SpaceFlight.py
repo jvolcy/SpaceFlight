@@ -81,12 +81,15 @@ def main():
     wallSpeed = wallSpeedIncrement
     shipYspeed = 15
     fuel = 100
+    score = 0
+    lives = 4
     fuelDecrement = 0.01
     gameOver = False
+    newGate = True;
     
     while not gameOver:
         canvas.clear()
-        drawHeader(name='Sam, I Am', score=0, level=1, speed=wallSpeed, fuel=fuel, lives=4)
+        drawHeader(name='Sam, I Am', score=score, level=1, speed=wallSpeed, fuel=fuel, lives=lives)
         drawPredictor(nextOpeningY, openingHeight)
         drawWall(x=int(wallX), y=HEADER_HEIGHT, width=WALL_WIDTH, height=GAME_WND_HEIGHT, openingY=openingY, openingHeight=openingHeight)
         drawShip(shipX, shipY)
@@ -99,7 +102,22 @@ def main():
             wallX = GAME_WND_WIDTH
             openingY = nextOpeningY
             nextOpeningY = random.randint(10+HEADER_HEIGHT+openingHeight//2, CANVAS_HEIGHT-openingHeight//2-10)
-            
+            newGate = True
+        
+        if wallX < shipX and newGate == True:
+            newGate = False
+            #check if we have a collision
+            if shipY < openingY-openingHeight//2 or shipY > openingY+openingHeight//2:
+                lives -= 1
+                if lives == 0:
+                    gameOver = True
+                    
+                canvas.setFill('red')
+                canvas.drawOval(shipX-50, shipY-50, 100, 100)
+                win.pause(1000)
+            else:
+                score += wallSpeed * 1000
+                
         key = win.GetKey()
         if key == 'q' or key == 'Q':
             win.quit()
@@ -118,6 +136,9 @@ def main():
             wallSpeed -= wallSpeedIncrement
             if wallSpeed < wallSpeedIncrement:
                 wallSpeed = wallSpeedIncrement
+        elif key == 'space':     #warp
+            shipY = openingY
+            fuel -= 10.0
             
         win.update()
     

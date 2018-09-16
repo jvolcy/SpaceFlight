@@ -2,6 +2,29 @@ from scgraphics import GraphicsWindow
 import sys
 import random
 
+'''Simple game to demonstrate use of scGraphics library.
+This game is intended to be a proof of concept for an
+first semester programming class.  The game makes no 
+use of classes or any coding concepts that may not be
+covered in a CS0 course.
+scGraphics is a modification of the ezGraphics library by
+Rance Necaise (http://ezgraphics.org).  Every attempt is
+made to keep szGraphics backward compatible with
+ezGraphics 2.1, from which it is derived.  The main
+differences between sc and ez are
+1)  addition of a canvas update function, update().  
+update() can be used instead of wait() so that
+the graphics on the canvas can be animated.  Use 
+update() inside of a loop that repeatedly clears() and
+redraws the canvas.
+2) addition of a non-blocking key reading function,
+scanKey().  Unlike getKey(), scanKey() returns the keysym
+for the last key pressed.  Instead of blocking and waiting
+for user input, scanKey() returns an empty string if no
+key has been pressed.
+3) by default, 'keypress' events are enabled
+'''
+
 # Constants
 CANVAS_WIDTH = 800
 CANVAS_HEIGHT = 600
@@ -16,10 +39,27 @@ WALL_WIDTH = 20
 win = GraphicsWindow(CANVAS_WIDTH, CANVAS_HEIGHT)
 canvas = win.canvas()
 
+def printInstructions():
+    instructions = '''Use the up and down arrows to move the spacecraft up and down.
+The object of the game is to navigate through each gate until your
+fuel runs out or until you have no crafts left.  On startup, your fuel
+is at 100% and you have 4 reserved crafts.  You can control the
+speed of your craft using the left and right arrows.  Your score
+increments with each gate you successfully cross.  The points 
+you accumulate is dependent on the speed at which you cross
+each gate.  Use the predictor at the upper-right to see the location
+of the next gate ahead.  You may use the spacebar to 'warp' through
+any gate.  Doing so will cost you 10% of your fuel.
+Good luck, Space Ranger!'''
+    
+    print('How to Play\n-----------')
+    print(instructions)
+    print()
+    
 # draw the spaceship
 def drawShip(x, y):
     canvas.setFill('dark gray')
-    canvas.setOutline('dark gray')
+    canvas.setOutline('darkgray')
     canvas.drawRect(x, y, 35, 10)
     canvas.drawOval(x+30, y, 10, 10)
     canvas.drawRect(x-2, y-8, 5, 16)
@@ -68,8 +108,9 @@ def drawPredictor(openingY, openingHeight):
     scale = HEADER_HEIGHT/CANVAS_HEIGHT
     openingY = int(openingY * scale)
     openingHeight = int(openingHeight * scale)
-    drawWall(x=CANVAS_WIDTH - 50, y=0, width=int(WALL_WIDTH*scale), height=HEADER_HEIGHT, openingY=openingY, openingHeight=openingHeight)
+    drawWall(x=CANVAS_WIDTH - 50, y=0, width=5, height=HEADER_HEIGHT, openingY=openingY, openingHeight=openingHeight)
 
+#main game loop
 def main():
     shipX = GAME_WND_WIDTH//4
     shipY = CENTERY
@@ -87,9 +128,17 @@ def main():
     gameOver = False
     newGate = True;
     
+    #print the instructions for play
+    printInstructions()
+    
+    #get the user's name
+    name = input('Please enter your name: ')
+    win.pause(1000)
+    
+    #enter the game loop
     while not gameOver:
         canvas.clear()
-        drawHeader(name='Sam, I Am', score=score, level=1, speed=wallSpeed, fuel=fuel, lives=lives)
+        drawHeader(name=name, score=score, level=1, speed=wallSpeed, fuel=fuel, lives=lives)
         drawPredictor(nextOpeningY, openingHeight)
         drawWall(x=int(wallX), y=HEADER_HEIGHT, width=WALL_WIDTH, height=GAME_WND_HEIGHT, openingY=openingY, openingHeight=openingHeight)
         drawShip(shipX, shipY)
@@ -118,7 +167,8 @@ def main():
             else:
                 score += wallSpeed * 1000
                 
-        key = win.GetKey()
+        #process user key inputs
+        key = win.scanKey()
         if key == 'q' or key == 'Q':
             win.quit()
             sys.exit()
@@ -142,14 +192,12 @@ def main():
             
         win.update()
     
+    #print a 'Game Over' message and quit
     canvas.setOutline('black')
     canvas.setTextFont(family='arial', size=48, style='bold')
     canvas.drawText(CENTERX - 120, CENTERY, 'GAME OVER')
     win.wait()
-'''
-add fuel that starts at 100% and goes to 0%...game over when we reach 0.
-add "warp"ing using the space bar.  This will cost 10% of the fuel.
-add "lives" which will start at 5 and drop to 0 with each strike of the wall.
-'''
 
+
+#call main()
 main()

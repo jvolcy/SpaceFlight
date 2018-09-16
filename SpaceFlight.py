@@ -10,6 +10,7 @@ GAME_WND_HEIGHT = CANVAS_HEIGHT - HEADER_HEIGHT
 GAME_WND_WIDTH = CANVAS_WIDTH
 CENTERX = GAME_WND_WIDTH//2
 CENTERY = GAME_WND_HEIGHT//2
+WALL_WIDTH = 20
 
 # Create the window and access the canvas. 
 win = GraphicsWindow(CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -25,42 +26,54 @@ def drawShip(x, y):
     canvas.drawRect(x, y-5, 5, 10)
 
 #draw the wall
-def drawWall(x, openingY, openingHeight):
+def drawWall(x, y, width, height, openingY, openingHeight):
     canvas.setFill('brown')
     canvas.setOutline('black')
-    canvas.drawRect(x-10, HEADER_HEIGHT, 20, GAME_WND_HEIGHT)
+    canvas.drawRect(x-width//2, y, width, height)
     canvas.setFill('white')
     canvas.setOutline('white')
-    canvas.drawRect(x-10, openingY-openingHeight//2, 20, openingHeight)
+    canvas.drawRect(x-width//2, openingY-openingHeight//2, width, openingHeight)
 
 #draw the header
-def drawHeader(name, score, level, speed, fuel):
+def drawHeader(name, score, level, speed, fuel, lives):
+    #draw the blue header
     canvas.setFill(40, 60, 200)
     canvas.setOutline('black')    
     canvas.drawRect(0, 0, GAME_WND_WIDTH, HEADER_HEIGHT)
-    canvas.setOutline('white')
+    
+    #draw the labels in white
     canvas.setTextFont(family='arial', size=18, style='normal')
+    canvas.setOutline('white')
     canvas.drawText(20, 10, 'Name')
     canvas.drawText(20, 40, 'Level:')
     canvas.drawText(260, 10, 'Score:')
     canvas.drawText(260, 40, 'Speed:')
     canvas.drawText(500, 10, 'Fuel:')
-    canvas.drawText(500, 40, 'Ship:')
+    canvas.drawText(500, 40, 'Lives:')
 
+    #draw the name entry in blue
     canvas.setOutline('light blue')
     canvas.drawText(120, 10, name)
+    
+    #draw all other entries in yellow
     canvas.setOutline('yellow')
     canvas.drawText(120, 40, '%02d'%(level))
     canvas.drawText(360, 10, '%05d'%(score))
     canvas.drawText(360, 40, '%0.1f MPH'%(175 + speed*100.0))
     canvas.drawText(600, 10, '%0.1f%%'%(fuel))
-    canvas.drawText(600, 40, '4')
-
+    canvas.drawText(600, 40, '%d'%(lives))
+    
+#draw the predictor
+def drawPredictor(openingY, openingHeight):
+    scale = HEADER_HEIGHT/CANVAS_HEIGHT
+    openingY = int(openingY * scale)
+    openingHeight = int(openingHeight * scale)
+    drawWall(x=CANVAS_WIDTH - 50, y=0, width=int(WALL_WIDTH*scale), height=HEADER_HEIGHT, openingY=openingY, openingHeight=openingHeight)
 
 def main():
     shipX = GAME_WND_WIDTH//4
     shipY = CENTERY
-    wallX = float(GAME_WND_WIDTH)
+    wallX = 0.0 #float(GAME_WND_WIDTH)
     openingY = CENTERY
     nextOpeningY = CENTERY
     openingHeight = 80
@@ -73,8 +86,9 @@ def main():
     
     while not gameOver:
         canvas.clear()
-        drawHeader('Sam, I Am', 00, 1, wallSpeed, fuel)
-        drawWall(int(wallX), openingY, openingHeight)
+        drawHeader(name='Sam, I Am', score=0, level=1, speed=wallSpeed, fuel=fuel, lives=4)
+        drawPredictor(nextOpeningY, openingHeight)
+        drawWall(x=int(wallX), y=HEADER_HEIGHT, width=WALL_WIDTH, height=GAME_WND_HEIGHT, openingY=openingY, openingHeight=openingHeight)
         drawShip(shipX, shipY)
         wallX -= wallSpeed
         fuel -= fuelDecrement

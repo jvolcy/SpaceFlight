@@ -132,7 +132,8 @@ def main():
     printInstructions()
     
     #get the user's name
-    name = input('Please enter your name: ')
+    #name = input('Please enter your name: ')
+    name = 'None'
     win.pause(1000)
     
     #enter the game loop
